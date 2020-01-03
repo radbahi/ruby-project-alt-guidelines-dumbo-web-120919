@@ -78,7 +78,6 @@ while gameStatus do
             puts "#{better.name} bet #{better.bet_amount} on #{myFighter.name}!"
             puts "#{fighterOne.name.colorize(:light_blue)} now has a total of $#{fighterOne.bet_pot.to_s.colorize(:light_magenta)} and #{fighterTwo.name.colorize(:yellow)} now has a total of $#{fighterTwo.bet_pot.to_s.colorize(:light_magenta)}."
             match.bet_pool = fighterOne.bet_pot + fighterTwo.bet_pot
-            binding.pry
             winnerPayout = match.bet_pool / match.betters.count #changed code USED TO GET LENGTH FROM ARRAY
             puts "The total pot of this match is now at $#{match.bet_pool.to_s.colorize(:light_magenta)}"
             moreBetters =  prompt.select("Anyone else wanna put their money on the line?", %w(Yes No))
