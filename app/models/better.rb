@@ -1,4 +1,4 @@
 class Better < ActiveRecord::Base
-has_one :fighter
+belongs_to :fighter
 has_many :matches
 end

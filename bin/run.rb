@@ -2,6 +2,7 @@ require_relative '../config/environment'
 require "tty-prompt"
 require "colorize"
 require 'colorized_string'
+require 'pry'
 prompt = TTY::Prompt.new
 cursor = TTY::Cursor
 ActiveRecord::Base.logger.level = 1 # or Logger::INFO
@@ -43,14 +44,13 @@ while gameStatus do
         fighterTwo = Fighter.create(name: Faker::Games::SuperSmashBros.unique.fighter)
         Faker::UniqueGenerator.clear
         match = Match.create(fighter_one: fighterOne.name, fighter_two: fighterTwo.name)
-        bettersThisMatch = []
         fork { exec 'afplay', "music/MatchTheme.mp3"}
         puts "It is time to schedule the next match!"
         while true do
             sleep(3)                                                            
             puts "This match will pin #{fighterOne.name.colorize(:light_blue)} against #{fighterTwo.name.colorize(:yellow)}! Who will come out on top?"
             better = Better.create()
-            better.bet_match = match.id
+            better.match_id = match.id
             better.name = prompt.ask("Fancy a wager? Enter your name to continue:", required: true)
             dupeCheck = Better.find_by(name: better.name)
             fighterChoices = {fighterOne.name => fighterOne, fighterTwo.name => fighterTwo}
@@ -59,23 +59,27 @@ while gameStatus do
             else
                 nameInput = prompt.select("Welcome, #{better.name}. Bet on your fighter!", fighterChoices)
             end
-            better.bet_on = nameInput
+            # better.update(fighter_id: nameInput)
+            better.update(bet_on: nameInput) # ADD THIS BETTER TO FIGHTER.BETTERS
             betInput = prompt.ask("Enter your bet amount:")
             while betInput.to_f == 0.0
                 betInput = prompt.ask("ERROR: That's not a valid amount. Please enter your bet amount:")
             end
             better.bet_amount = betInput
-            bettersThisMatch << better
-            better.save
+            match.betters << better
+            #better
             myFighter = nameInput
             myFighter.bet_pot = better.bet_amount + myFighter.bet_pot
+            myFighter.better_id = better.id
             myFighter.save
+            better.save
             fighterOne = Fighter.find(fighterOne.id)
             fighterTwo = Fighter.find(fighterTwo.id)
             puts "#{better.name} bet #{better.bet_amount} on #{myFighter.name}!"
             puts "#{fighterOne.name.colorize(:light_blue)} now has a total of $#{fighterOne.bet_pot.to_s.colorize(:light_magenta)} and #{fighterTwo.name.colorize(:yellow)} now has a total of $#{fighterTwo.bet_pot.to_s.colorize(:light_magenta)}."
             match.bet_pool = fighterOne.bet_pot + fighterTwo.bet_pot
-            winnerPayout = match.bet_pool / bettersThisMatch.length
+            binding.pry
+            winnerPayout = match.bet_pool / match.betters.count #changed code USED TO GET LENGTH FROM ARRAY
             puts "The total pot of this match is now at $#{match.bet_pool.to_s.colorize(:light_magenta)}"
             moreBetters =  prompt.select("Anyone else wanna put their money on the line?", %w(Yes No))
             print cursor.clear_lines(9, :up)
@@ -203,7 +207,6 @@ puts "                    ██████╗ ██████╗  ███
                     ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝".colorize(:red)
 puts"                Made by Radouane Bahi. Please don't sue me, Nintendo.".colorize(:yellow)                                           
     if nextMatch == "No"
-    Better.destroy_all
     system 'clear'
     puts "
         ███        ▄█    █▄       ▄████████ ███▄▄▄▄      ▄█   ▄█▄    ▄████████ 

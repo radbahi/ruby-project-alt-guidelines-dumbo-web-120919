@@ -4,7 +4,8 @@ class CreateBetter < ActiveRecord::Migration[5.2]
       t.string :name
       t.float :bet_amount, default: 0.0
       t.string :bet_on # fighter name
-      t.integer :bet_match # see what match they bet on
+      t.integer :fighter_id
+      t.integer :match_id
      end
   end
 end

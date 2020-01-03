@@ -16,18 +16,23 @@ ActiveRecord::Schema.define(version: 2019_12_22_210517) do
     t.string "name"
     t.float "bet_amount", default: 0.0
     t.string "bet_on"
-    t.integer "bet_match"
+    t.integer "fighter_id"
+    t.integer "match_id"
   end
 
   create_table "fighters", force: :cascade do |t|
     t.string "name"
     t.integer "health", default: 100
     t.float "bet_pot", default: 0.0
+    t.integer "better_id"
+    t.integer "match_id"
   end
 
   create_table "matches", force: :cascade do |t|
     t.string "fighter_one"
     t.string "fighter_two"
+    t.integer "better_id"
+    t.integer "fighter_id"
     t.float "bet_pool", default: 0.0
     t.string "winner"
     t.string "loser"
